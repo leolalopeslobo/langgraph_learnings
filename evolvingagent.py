@@ -33,6 +33,14 @@ builder.add_edge("chatbot", END)
 
 graph = builder.compile()
 
+from langgraph.checkpoint.memory import MemorySaver
+memory = MemorySaver()
+graph_memory = builder.compile(checkpointer=memory)
+# Specify a thread
+thread_id = "1"
+config = {"configurable": {"thread_id": thread_id}}
+
+
 state: MessagesState = {
     "messages": [AIMessage(content="Hey! What's on your mind today?", name="Model")]
 }
@@ -46,7 +54,8 @@ while True:
 
         state["messages"].append(HumanMessage(content=user_input, name="User")) 
 
-        state = graph.invoke(state)
+        # state = graph.invoke(state)
+        state = graph_memory.invoke(state,config)
         print(f"Chatbot: {state['messages'][-1].content}")
 
         # print(state)
